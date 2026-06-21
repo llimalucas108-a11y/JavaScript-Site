@@ -1,1449 +1,324 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>JavaScript — A Linguagem da Web</title>
-<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;600;700;800&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
-<style>
-  :root {
-    --js-yellow: #F7DF1E;
-    --js-black: #000000;
-    --bg-dark: #0D0D0D;
-    --bg-card: #111111;
-    --bg-card2: #161616;
-    --text-primary: #F0F0F0;
-    --text-muted: #888;
-    --accent: #F7DF1E;
-    --accent-dim: rgba(247,223,30,0.12);
-    --accent-glow: rgba(247,223,30,0.35);
-    --border: rgba(247,223,30,0.15);
-    --border-bright: rgba(247,223,30,0.45);
-    --code-bg: #0A0A0A;
-    --green: #4EC94E;
-    --blue: #79B8FF;
-    --orange: #FFAB70;
-    --pink: #F97583;
-    --purple: #B392F0;
-  }
-
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-  html { scroll-behavior: smooth; }
-
-  body {
-    font-family: 'Syne', sans-serif;
-    background: var(--bg-dark);
-    color: var(--text-primary);
-    overflow-x: hidden;
-    cursor: none;
-  }
-
-  /* Custom Cursor */
-  .cursor {
-    width: 12px; height: 12px;
-    background: var(--js-yellow);
-    border-radius: 50%;
-    position: fixed;
-    top: 0; left: 0;
-    pointer-events: none;
-    z-index: 9999;
-    transform: translate(-50%, -50%);
-    transition: transform 0.1s ease, width 0.2s, height 0.2s;
-    mix-blend-mode: difference;
-  }
-  .cursor-ring {
-    width: 36px; height: 36px;
-    border: 1.5px solid var(--js-yellow);
-    border-radius: 50%;
-    position: fixed;
-    top: 0; left: 0;
-    pointer-events: none;
-    z-index: 9998;
-    transform: translate(-50%, -50%);
-    transition: left 0.08s ease, top 0.08s ease;
-    opacity: 0.6;
-  }
-
-  /* Grain overlay */
-  body::before {
-    content: '';
-    position: fixed;
-    inset: 0;
-    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.035'/%3E%3C/svg%3E");
-    pointer-events: none;
-    z-index: 9000;
-    opacity: 0.5;
-  }
-
-  /* NAV */
-  nav {
-    position: fixed; top: 0; left: 0; right: 0;
-    z-index: 1000;
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 1.2rem 4rem;
-    background: rgba(13,13,13,0.85);
-    backdrop-filter: blur(20px);
-    border-bottom: 1px solid var(--border);
-  }
-  .nav-logo {
-    display: flex; align-items: center; gap: 0.75rem;
-    font-family: 'JetBrains Mono', monospace;
-    font-weight: 800; font-size: 1.3rem;
-    color: var(--js-yellow);
-    text-decoration: none;
-  }
-  .nav-logo .logo-badge {
-    width: 36px; height: 36px;
-    background: var(--js-yellow);
-    color: #000;
-    display: flex; align-items: center; justify-content: center;
-    font-weight: 800; font-size: 0.9rem;
-    border-radius: 6px;
-  }
-  .nav-links { display: flex; gap: 2.5rem; list-style: none; }
-  .nav-links a {
-    color: var(--text-muted);
-    text-decoration: none;
-    font-size: 0.85rem;
-    font-weight: 600;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    transition: color 0.2s;
-  }
-  .nav-links a:hover { color: var(--js-yellow); }
-
-  /* HERO */
-  .hero {
-    min-height: 100vh;
-    display: flex; align-items: center; justify-content: center;
-    position: relative;
-    padding: 8rem 4rem 4rem;
-    overflow: hidden;
-  }
-  .hero-grid {
-    position: absolute; inset: 0;
-    background-image:
-      linear-gradient(rgba(247,223,30,0.04) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(247,223,30,0.04) 1px, transparent 1px);
-    background-size: 60px 60px;
-    animation: gridScroll 20s linear infinite;
-  }
-  @keyframes gridScroll {
-    0% { transform: translateY(0); }
-    100% { transform: translateY(60px); }
-  }
-  .hero-glow {
-    position: absolute;
-    width: 700px; height: 700px;
-    background: radial-gradient(circle, rgba(247,223,30,0.12) 0%, transparent 70%);
-    top: 50%; left: 50%;
-    transform: translate(-50%, -50%);
-    pointer-events: none;
-    animation: pulse 4s ease-in-out infinite;
-  }
-  @keyframes pulse {
-    0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 0.8; }
-    50% { transform: translate(-50%, -50%) scale(1.15); opacity: 1; }
-  }
-  .hero-content {
-    position: relative; z-index: 1;
-    display: grid; grid-template-columns: 1fr 1fr;
-    gap: 4rem; align-items: center;
-    max-width: 1300px; width: 100%;
-  }
-  .hero-eyebrow {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 0.78rem; font-weight: 600;
-    color: var(--js-yellow);
-    letter-spacing: 0.2em;
-    text-transform: uppercase;
-    margin-bottom: 1.2rem;
-    display: flex; align-items: center; gap: 0.75rem;
-  }
-  .hero-eyebrow::before {
-    content: ''; display: block;
-    width: 32px; height: 2px;
-    background: var(--js-yellow);
-  }
-  .hero-title {
-    font-size: clamp(3.5rem, 6vw, 6rem);
-    font-weight: 800;
-    line-height: 0.95;
-    letter-spacing: -0.03em;
-    margin-bottom: 1.5rem;
-  }
-  .hero-title .highlight { color: var(--js-yellow); }
-  .hero-desc {
-    font-size: 1.1rem;
-    color: var(--text-muted);
-    line-height: 1.7;
-    max-width: 480px;
-    margin-bottom: 2.5rem;
-  }
-  .hero-cta {
-    display: flex; gap: 1rem; flex-wrap: wrap;
-  }
-  .btn-primary {
-    background: var(--js-yellow);
-    color: #000;
-    padding: 0.85rem 2rem;
-    border: none; border-radius: 6px;
-    font-family: 'Syne', sans-serif;
-    font-weight: 700; font-size: 0.9rem;
-    cursor: none;
-    text-decoration: none;
-    display: inline-flex; align-items: center; gap: 0.5rem;
-    transition: transform 0.2s, box-shadow 0.2s;
-  }
-  .btn-primary:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 30px var(--accent-glow);
-  }
-  .btn-outline {
-    background: transparent;
-    color: var(--text-primary);
-    padding: 0.85rem 2rem;
-    border: 1px solid var(--border-bright);
-    border-radius: 6px;
-    font-family: 'Syne', sans-serif;
-    font-weight: 700; font-size: 0.9rem;
-    cursor: none;
-    text-decoration: none;
-    transition: border-color 0.2s, color 0.2s;
-  }
-  .btn-outline:hover { border-color: var(--js-yellow); color: var(--js-yellow); }
-
-  /* Floating Code Window */
-  .hero-visual {
-    position: relative;
-  }
-  .code-window {
-    background: var(--code-bg);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    overflow: hidden;
-    box-shadow: 0 40px 80px rgba(0,0,0,0.6), 0 0 60px rgba(247,223,30,0.08);
-    animation: float 6s ease-in-out infinite;
-  }
-  @keyframes float {
-    0%, 100% { transform: translateY(0px) rotate(-1deg); }
-    50% { transform: translateY(-16px) rotate(0.5deg); }
-  }
-  .window-bar {
-    background: #1A1A1A;
-    padding: 0.8rem 1.2rem;
-    display: flex; align-items: center; gap: 0.5rem;
-    border-bottom: 1px solid var(--border);
-  }
-  .dot { width: 12px; height: 12px; border-radius: 50%; }
-  .dot-red { background: #FF5F56; }
-  .dot-yellow { background: #FFBD2E; }
-  .dot-green { background: #27C93F; }
-  .window-title {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 0.75rem; color: var(--text-muted);
-    margin-left: auto; margin-right: auto;
-  }
-  .code-body {
-    padding: 1.8rem;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 0.82rem;
-    line-height: 1.9;
-  }
-  .code-body .ln { color: #333; margin-right: 1.5rem; user-select: none; }
-  .kw { color: var(--purple); }
-  .fn { color: var(--blue); }
-  .str { color: var(--orange); }
-  .num { color: var(--green); }
-  .cmt { color: #555; font-style: italic; }
-  .op { color: var(--pink); }
-  .yr { color: var(--js-yellow); font-weight: 700; }
-
-  /* Floating stats */
-  .stat-bubble {
-    position: absolute;
-    background: var(--bg-card2);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 0.85rem 1.2rem;
-    display: flex; align-items: center; gap: 0.75rem;
-    backdrop-filter: blur(10px);
-    animation: float2 5s ease-in-out infinite;
-  }
-  .stat-bubble:nth-child(2) { animation-delay: -2s; }
-  .stat-bubble .stat-num {
-    font-size: 1.4rem; font-weight: 800;
-    color: var(--js-yellow);
-    font-family: 'JetBrains Mono', monospace;
-  }
-  .stat-bubble .stat-label { font-size: 0.75rem; color: var(--text-muted); }
-  .sb1 { top: -20px; right: -30px; }
-  .sb2 { bottom: -20px; left: -30px; animation-delay: -3s; }
-  @keyframes float2 {
-    0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-8px); }
-  }
-
-  /* SECTIONS */
-  section { padding: 8rem 4rem; max-width: 1300px; margin: 0 auto; }
-  .section-label {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 0.72rem; font-weight: 600;
-    color: var(--js-yellow);
-    letter-spacing: 0.2em;
-    text-transform: uppercase;
-    margin-bottom: 1rem;
-    display: flex; align-items: center; gap: 0.75rem;
-  }
-  .section-label::before {
-    content: '//'; color: rgba(247,223,30,0.4);
-  }
-  .section-title {
-    font-size: clamp(2.2rem, 4vw, 3.5rem);
-    font-weight: 800;
-    line-height: 1.1;
-    letter-spacing: -0.02em;
-    margin-bottom: 1.2rem;
-  }
-  .section-subtitle {
-    color: var(--text-muted);
-    font-size: 1.05rem;
-    line-height: 1.7;
-    max-width: 600px;
-    margin-bottom: 3rem;
-  }
-
-  /* HISTORY */
-  .history-grid {
-    display: grid; grid-template-columns: 1fr 1fr;
-    gap: 4rem; align-items: start;
-    margin-top: 2rem;
-  }
-  .timeline {
-    display: flex; flex-direction: column; gap: 0;
-    position: relative;
-  }
-  .timeline::before {
-    content: '';
-    position: absolute;
-    left: 15px; top: 30px; bottom: 0;
-    width: 1px;
-    background: linear-gradient(to bottom, var(--js-yellow), transparent);
-  }
-  .tl-item {
-    display: flex; gap: 1.5rem;
-    padding-bottom: 2.5rem;
-    position: relative;
-    opacity: 0;
-    transform: translateX(-20px);
-    transition: opacity 0.5s ease, transform 0.5s ease;
-  }
-  .tl-item.visible { opacity: 1; transform: translateX(0); }
-  .tl-dot {
-    width: 30px; height: 30px; flex-shrink: 0;
-    background: var(--bg-dark);
-    border: 2px solid var(--js-yellow);
-    border-radius: 50%;
-    display: flex; align-items: center; justify-content: center;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 0.6rem; font-weight: 700;
-    color: var(--js-yellow);
-    z-index: 1;
-    position: relative;
-  }
-  .tl-content { flex: 1; }
-  .tl-year {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 0.72rem; color: var(--js-yellow);
-    font-weight: 700; letter-spacing: 0.1em;
-    margin-bottom: 0.25rem;
-  }
-  .tl-event { font-weight: 700; font-size: 1rem; margin-bottom: 0.35rem; }
-  .tl-desc { font-size: 0.88rem; color: var(--text-muted); line-height: 1.6; }
-  .creator-card {
-    background: var(--bg-card);
-    border: 1px solid var(--border);
-    border-radius: 16px;
-    overflow: hidden;
-    position: sticky; top: 100px;
-  }
-  .creator-header {
-    background: linear-gradient(135deg, #1a1a00 0%, #1a1500 100%);
-    border-bottom: 1px solid var(--border);
-    padding: 2rem;
-    text-align: center;
-  }
-  .creator-avatar {
-    width: 80px; height: 80px;
-    background: var(--js-yellow);
-    border-radius: 50%;
-    margin: 0 auto 1rem;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 2rem;
-    font-weight: 900;
-    color: #000;
-    font-family: 'JetBrains Mono', monospace;
-  }
-  .creator-name { font-size: 1.4rem; font-weight: 800; margin-bottom: 0.25rem; }
-  .creator-role { font-size: 0.82rem; color: var(--text-muted); }
-  .creator-body { padding: 2rem; }
-  .creator-fact {
-    display: flex; gap: 1rem; align-items: flex-start;
-    padding: 1rem 0;
-    border-bottom: 1px solid rgba(255,255,255,0.05);
-  }
-  .creator-fact:last-child { border-bottom: none; }
-  .fact-icon { font-size: 1.2rem; flex-shrink: 0; margin-top: 2px; }
-  .fact-text { font-size: 0.88rem; color: var(--text-muted); line-height: 1.6; }
-  .fact-text strong { color: var(--text-primary); }
-
-  /* USAGE SECTION */
-  .usage-section {
-    border-top: 1px solid var(--border);
-    padding-top: 8rem;
-  }
-  .usage-grid {
-    display: grid; grid-template-columns: repeat(3, 1fr);
-    gap: 1.5rem; margin-top: 3rem;
-  }
-  .usage-card {
-    background: var(--bg-card);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 2rem;
-    position: relative;
-    overflow: hidden;
-    transition: transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
-    opacity: 0;
-    transform: translateY(30px);
-    transition: opacity 0.5s ease, transform 0.5s ease, box-shadow 0.3s ease;
-  }
-  .usage-card.visible {
-    opacity: 1; transform: translateY(0);
-  }
-  .usage-card::before {
-    content: '';
-    position: absolute;
-    top: 0; left: 0; right: 0;
-    height: 3px;
-    background: var(--js-yellow);
-    transform: scaleX(0);
-    transition: transform 0.3s ease;
-    transform-origin: left;
-  }
-  .usage-card:hover::before { transform: scaleX(1); }
-  .usage-card:hover {
-    box-shadow: 0 20px 50px rgba(0,0,0,0.4), 0 0 30px rgba(247,223,30,0.06);
-    border-color: var(--border-bright);
-  }
-  .usage-icon {
-    font-size: 2.5rem; margin-bottom: 1.2rem;
-    display: block;
-    filter: drop-shadow(0 0 20px rgba(247,223,30,0.3));
-  }
-  .usage-title { font-size: 1.2rem; font-weight: 700; margin-bottom: 0.6rem; }
-  .usage-desc { font-size: 0.88rem; color: var(--text-muted); line-height: 1.6; }
-  .usage-tag {
-    display: inline-block;
-    margin-top: 1rem;
-    padding: 0.3rem 0.75rem;
-    background: var(--accent-dim);
-    color: var(--js-yellow);
-    border-radius: 4px;
-    font-size: 0.72rem;
-    font-family: 'JetBrains Mono', monospace;
-    font-weight: 600;
-  }
-
-  /* SYNTAX SECTION */
-  .syntax-section {
-    border-top: 1px solid var(--border);
-    padding-top: 8rem;
-  }
-  .syntax-tabs {
-    display: flex; gap: 0.5rem; flex-wrap: wrap;
-    margin-bottom: 2rem;
-  }
-  .tab-btn {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 0.8rem; font-weight: 600;
-    padding: 0.6rem 1.2rem;
-    background: transparent;
-    color: var(--text-muted);
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    cursor: none;
-    transition: all 0.2s;
-  }
-  .tab-btn:hover { border-color: var(--js-yellow); color: var(--js-yellow); }
-  .tab-btn.active {
-    background: var(--js-yellow);
-    color: #000;
-    border-color: var(--js-yellow);
-  }
-  .tab-panel { display: none; }
-  .tab-panel.active { display: block; }
-  .syntax-layout {
-    display: grid; grid-template-columns: 1fr 1fr;
-    gap: 2rem; align-items: start;
-  }
-  .syntax-explain {
-    padding: 2rem;
-    background: var(--bg-card);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-  }
-  .syntax-explain h3 { font-size: 1.3rem; font-weight: 700; margin-bottom: 0.75rem; }
-  .syntax-explain p { color: var(--text-muted); font-size: 0.9rem; line-height: 1.7; margin-bottom: 1rem; }
-  .syntax-explain ul { list-style: none; padding: 0; }
-  .syntax-explain ul li {
-    font-size: 0.88rem; color: var(--text-muted);
-    padding: 0.4rem 0;
-    display: flex; align-items: center; gap: 0.75rem;
-    border-bottom: 1px solid rgba(255,255,255,0.04);
-  }
-  .syntax-explain ul li::before {
-    content: '▸'; color: var(--js-yellow); font-size: 0.7rem; flex-shrink: 0;
-  }
-  .code-block {
-    background: var(--code-bg);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    overflow: hidden;
-  }
-  .code-block-header {
-    background: #1A1A1A;
-    padding: 0.75rem 1.2rem;
-    display: flex; align-items: center; gap: 0.5rem;
-    border-bottom: 1px solid var(--border);
-  }
-  .code-block-title {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 0.75rem; color: var(--text-muted);
-    margin-left: 0.5rem;
-  }
-  .code-block pre {
-    padding: 1.5rem;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 0.82rem;
-    line-height: 1.9;
-    overflow-x: auto;
-    color: var(--text-primary);
-  }
-
-  /* FEATURES SECTION */
-  .features-section {
-    border-top: 1px solid var(--border);
-    padding-top: 8rem;
-  }
-  .features-bento {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    grid-template-rows: auto auto;
-    gap: 1.5rem;
-    margin-top: 3rem;
-  }
-  .bento-card {
-    background: var(--bg-card);
-    border: 1px solid var(--border);
-    border-radius: 16px;
-    padding: 2rem;
-    overflow: hidden;
-    position: relative;
-    transition: border-color 0.3s, box-shadow 0.3s;
-    opacity: 0;
-    transform: scale(0.96);
-    transition: opacity 0.5s ease, transform 0.5s ease, box-shadow 0.3s;
-  }
-  .bento-card.visible { opacity: 1; transform: scale(1); }
-  .bento-card:hover {
-    border-color: var(--border-bright);
-    box-shadow: 0 20px 40px rgba(0,0,0,0.3);
-  }
-  .bento-card.wide { grid-column: span 2; }
-  .bento-card.tall { grid-row: span 2; }
-  .bento-card .bg-char {
-    position: absolute; right: -10px; bottom: -20px;
-    font-size: 6rem; opacity: 0.06;
-    font-family: 'JetBrains Mono', monospace;
-    font-weight: 900;
-    color: var(--js-yellow);
-    pointer-events: none;
-    user-select: none;
-    line-height: 1;
-  }
-  .bento-icon { font-size: 2rem; margin-bottom: 1rem; }
-  .bento-title { font-size: 1.05rem; font-weight: 700; margin-bottom: 0.6rem; }
-  .bento-desc { font-size: 0.85rem; color: var(--text-muted); line-height: 1.65; }
-  .bento-code {
-    margin-top: 1rem;
-    background: rgba(0,0,0,0.4);
-    border-radius: 6px;
-    padding: 1rem;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 0.78rem;
-    line-height: 1.8;
-    border: 1px solid rgba(255,255,255,0.06);
-  }
-  .bento-badge {
-    display: inline-block;
-    margin-bottom: 0.75rem;
-    padding: 0.25rem 0.75rem;
-    background: var(--accent-dim);
-    color: var(--js-yellow);
-    border-radius: 4px;
-    font-size: 0.7rem;
-    font-family: 'JetBrains Mono', monospace;
-    font-weight: 700;
-  }
-  .ecma-bar {
-    display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 1rem;
-  }
-  .ecma-chip {
-    padding: 0.3rem 0.7rem;
-    background: rgba(247,223,30,0.08);
-    border: 1px solid rgba(247,223,30,0.2);
-    border-radius: 4px;
-    font-size: 0.72rem;
-    font-family: 'JetBrains Mono', monospace;
-    color: var(--js-yellow);
-  }
-
-  /* ENGINES SECTION */
-  .engines-section {
-    border-top: 1px solid var(--border);
-    padding-top: 8rem;
-  }
-  .engines-grid {
-    display: grid; grid-template-columns: repeat(3, 1fr);
-    gap: 1.5rem; margin-top: 3rem;
-  }
-  .engine-card {
-    background: var(--bg-card);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 2rem;
-    text-align: center;
-    transition: border-color 0.3s, transform 0.3s;
-  }
-  .engine-card:hover { border-color: var(--js-yellow); transform: translateY(-4px); }
-  .engine-logo {
-    width: 60px; height: 60px;
-    margin: 0 auto 1rem;
-    background: var(--accent-dim);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 1.8rem;
-  }
-  .engine-name { font-weight: 700; font-size: 1.1rem; margin-bottom: 0.3rem; }
-  .engine-by { font-size: 0.8rem; color: var(--js-yellow); margin-bottom: 0.6rem; font-family: 'JetBrains Mono', monospace; }
-  .engine-desc { font-size: 0.84rem; color: var(--text-muted); line-height: 1.6; }
-
-  /* FOOTER */
-  footer {
-    border-top: 1px solid var(--border);
-    padding: 4rem;
-    text-align: center;
-    position: relative;
-    overflow: hidden;
-  }
-  .footer-logo {
-    font-size: 3rem; font-weight: 900;
-    font-family: 'JetBrains Mono', monospace;
-    color: var(--js-yellow);
-    margin-bottom: 1rem;
-    opacity: 0.15;
-  }
-  .footer-text { color: var(--text-muted); font-size: 0.85rem; line-height: 1.7; }
-  .footer-text a { color: var(--js-yellow); text-decoration: none; }
-
-  /* DIVIDER */
-  .full-width-section {
-    padding: 8rem 0;
-    border-top: 1px solid var(--border);
-    background: linear-gradient(to right, transparent, rgba(247,223,30,0.03), transparent);
-    text-align: center;
-    position: relative;
-    overflow: hidden;
-  }
-  .marquee-wrap { overflow: hidden; padding: 1.5rem 0; }
-  .marquee-track {
-    display: flex; gap: 4rem;
-    white-space: nowrap;
-    animation: marquee 25s linear infinite;
-  }
-  .marquee-item {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 0.8rem; color: var(--text-muted);
-    display: flex; align-items: center; gap: 1.5rem;
-    flex-shrink: 0;
-  }
-  .marquee-item .separator { color: var(--js-yellow); font-size: 1.2rem; }
-  @keyframes marquee {
-    0% { transform: translateX(0); }
-    100% { transform: translateX(-50%); }
-  }
-  .big-stat-row {
-    display: flex; justify-content: center; gap: 6rem;
-    margin-top: 4rem; flex-wrap: wrap;
-  }
-  .big-stat { text-align: center; }
-  .big-stat-num {
-    font-size: 4rem; font-weight: 800;
-    font-family: 'JetBrains Mono', monospace;
-    color: var(--js-yellow);
-    line-height: 1;
-    display: block;
-  }
-  .big-stat-label { font-size: 0.85rem; color: var(--text-muted); margin-top: 0.5rem; }
-
-  /* SCROLL ANIMATIONS */
-  .reveal {
-    opacity: 0; transform: translateY(24px);
-    transition: opacity 0.6s ease, transform 0.6s ease;
-  }
-  .reveal.visible { opacity: 1; transform: translateY(0); }
-
-  /* Responsive */
-  @media (max-width: 900px) {
-    nav { padding: 1rem 1.5rem; }
-    .nav-links { display: none; }
-    section { padding: 4rem 1.5rem; }
-    .hero { padding: 6rem 1.5rem 3rem; }
-    .hero-content { grid-template-columns: 1fr; }
-    .history-grid { grid-template-columns: 1fr; }
-    .usage-grid { grid-template-columns: 1fr 1fr; }
-    .syntax-layout { grid-template-columns: 1fr; }
-    .features-bento { grid-template-columns: 1fr 1fr; }
-    .bento-card.wide { grid-column: span 1; }
-    .engines-grid { grid-template-columns: 1fr; }
-    footer { padding: 3rem 1.5rem; }
-  }
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enciclopédia do Xadrez</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="shortcut icon" href="favicon_io/favicon.ico" type="image/x-icon">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
 
-<!-- Custom Cursor -->
-<div class="cursor" id="cursor"></div>
-<div class="cursor-ring" id="cursorRing"></div>
+    <aside class="sidebar">
 
-<!-- NAV -->
-<nav>
-  <a class="nav-logo" href="#">
-    <span class="logo-badge">JS</span>
-    JavaScript
-  </a>
-  <ul class="nav-links">
-    <li><a href="#historia">História</a></li>
-    <li><a href="#usos">Utilidades</a></li>
-    <li><a href="#sintaxe">Sintaxe</a></li>
-    <li><a href="#recursos">Recursos</a></li>
-    <li><a href="#motores">Motores</a></li>
-  </ul>
-</nav>
+        <h1>♔ ChessWiki</h1>
 
-<!-- HERO -->
-<div class="hero">
-  <div class="hero-grid"></div>
-  <div class="hero-glow"></div>
-  <div class="hero-content">
-    <div class="hero-text">
-      <div class="hero-eyebrow">A linguagem da web</div>
-      <h1 class="hero-title">
-        Aprender<br><span class="highlight">JavaScript</span><br>do zero.
-      </h1>
-      <p class="hero-desc">
-        Da criação em 10 dias por Brendan Eich à dominância em 98% da web. Descubra a história, a sintaxe e o poder real da linguagem mais usada do mundo.
-      </p>
-      <div class="hero-cta">
-        <a href="#historia" class="btn-primary">Começar agora →</a>
-        <a href="#sintaxe" class="btn-outline">Ver sintaxe</a>
-      </div>
+        <nav>
+            <ul>
+                <li><a href="#introducao">Introdução</a></li>
+                <li><a href="#historia">História</a></li>
+                <li><a href="#pecas">Peças</a></li>
+                <li><a href="#movimentos">Movimentos Especiais</a></li>
+                <li><a href="#taticas">Táticas</a></li>
+                <li><a href="#aberturas">Aberturas</a></li>
+                <li><a href="#gambits">Gambits</a></li>
+                <li><a href="#gm">Grandes Mestres</a></li>
+                <li><a href="#elo">Sistema Elo</a></li>
+                <li><a href="#curiosidades">Curiosidades</a></li>
+            </ul>
+        </nav>
+
+    </aside>
+
+    <main class="content">
+
+        <header class="hero">
+            <h1>Enciclopédia do Xadrez</h1>
+
+            <p>
+                Nessa Enciclopédia do Xadrez, será possível ver um pouco de tudo sobre a história, regras, estratégias,
+                jogadores lendários e curiosidades do esporte mental mais famoso do mundo.
+            </p>
+        </header>
+
+        <section id="introducao">
+            <h2>Introdução</h2>
+
+            <p>
+                O xadrez é um jogo de estratégia disputado entre dois jogadores
+                em um tabuleiro de 64 casas.
+            </p>
+
+            <div class="info-box">
+                Objetivo: O objetivo principal do xadrez colocar o rei adversário em posição de "xeque-mate".
+
+                O xeque-mate ocorre quando o rei está sob ataque e não há movimentos legais para escapar.
+            </div>
+        </section>
+
+        <section id="historia">
+            <h2>História do Xadrez</h2>
+
+            <div class="card">
+                <h3>Origem</h3>
+                <p>
+                    O xadrez surgiu a partir do Chaturanga, um jogo criado na Índia por volta do século VI.
+                </p>
+            </div>
+
+            <div class="card">
+                <h3>Evolução</h3>
+                <p>
+                    Passou pela Pérsia, chegou à Europa e recebeu suas regras modernas no século XV, mas que continuam tendo alterações e melhorias até os dias de hoje.
+                </p>
+            </div>
+        </section>
+
+        <section id="pecas">
+            <h2>Peças</h2>
+
+            <div class="grid">
+
+                <div class="card">
+                    <h3>♔ Rei</h3>
+                    <p>O Rei move-se apenas uma casa, mas em qualquer direção.</p>
+                </div>
+
+                <div class="card">
+                    <h3>♕ Rainha</h3>
+                    <p>A Move-se em todas as direções (diagonais, horizontais, verticais) e em um numero n de casas.</p>
+                </div>
+
+                <div class="card">
+                    <h3>♖ Torre</h3>
+                    <p>Move-se apenas horizontalmente e verticalmente.</p>
+                </div>
+
+                <div class="card">
+                    <h3>♗ Bispo</h3>
+                    <p>Move-se apenas pelas diagonais.</p>
+                </div>
+
+                <div class="card">
+                    <h3>♘ Cavalo</h3>
+                    <p>Move-se em formato de "L".</p>
+                </div>
+
+                <div class="card">
+                    <h3>♙ Peão</h3>
+                    <p>Possui regras especiais e promoção.
+
+                    Uma promoção ocorre quando o peão alcança a última fileira do tabuleiro, podendo se transformar em qualquer outra peça, exceto o rei.
+                    </p>
+                </div>
+
+            </div>
+        </section>
+
+        <section id="movimentos">
+            <h2>Movimentos Especiais</h2>
+
+            <div class="card destaque">
+                <h3>En Passant</h3>
+
+                <p>
+                    O En Passant é uma captura especial realizada quando um peão avança duas casas
+                    e para ao lado de um peão adversário.
+                </p>
+            </div>
+
+            <div class="card destaque">
+                <h3>Roque</h3>
+
+                <p>
+                    O Roque é um movimento especial envolvendo o rei e uma torre.
+
+                    Ele acontece quando o rei se move duas casas em direção a uma torre, e a torre se move para a casa imediatamente ao lado do rei.
+                </p>
+            </div>
+
+            <div class="card destaque">
+                <h3>Promoção</h3>
+
+                <p>
+                    Como explicado anteriormente, quando um peão alcança a última fileira ele pode se transformar em outra peça.
+                </p>
+            </div>
+
+        </section>
+
+        <section id="taticas">
+            <h2>Táticas</h2>
+
+            <div class="grid">
+
+                <div class="card">
+                    <h3>Garfo</h3>
+                    <p> A tática do "garfo" no xadrez consiste em um movimento em que uma peça ataca duas ou mais peças adversárias ao mesmo tempo, forçando o oponente a escolher qual peça salvar.
+                    </p>
+                </div>
+
+                <div class="card">
+                    <h3>Cravada</h3>
+                    <p> A cravada é uma tática em que uma peça é atacada e não pode se mover sem expor uma peça mais valiosa atrás dela.
+                </div>
+
+                <div class="card">
+                    <h3>Espeto</h3>
+                <p> O espeto é uma tática em que uma peça ataca uma peça adversária, forçando-a a se mover e expondo outra peça mais valiosa atrás dela. </p>
+                </div>
+
+                <div class="card">
+                    <h3>Ataque Descoberto</h3>
+                    <p> O ataque descoberto ocorre quando uma peça se move, revelando um ataque de outra peça que estava "escondida" atrás dela. </p>
+                </div>
+
+            </div>
+        </section>
+
+        <section id="aberturas">
+            <h2>Aberturas</h2>
+
+            <div class="grid">
+
+                <div class="card">Ruy López</div>
+                <p> A abertura "Ruy López" é uma das mais famosas aberturas do xadrez, e é feita com os seguintes movimentos de peças:
+                1. e4 e5
+                2. Nf3 Nc6
+                3. Bb5.
+                </p>
+                <p>Ela é nomeada em homenagem ao sacerdote espanhol Ruy López de Segura, que escreveu um dos primeiros livros sobre xadrez no século XVI. A abertura visa controlar o centro do tabuleiro e desenvolver as peças rapidamente, preparando-se para o meio-jogo.</p>
+                </p>
+                <div class="card">Abertura Italiana</div>
+                <p> A abertura "Abertura Italiana" é uma das aberturas mais antigas e populares do xadrez, e é feita com os seguintes movimentos de peças:
+                1. e4 e5
+                2. Nf3 Nc6
+                3. Bc4.
+                </p>
+                <p>Ela é nomeada em homenagem à Itália, onde foi popularizada no século XVI. A abertura visa controlar o centro do tabuleiro e desenvolver as peças rapidamente, preparando-se para o meio-jogo.</p>
+                <div class="card">Defesa Siciliana</div>
+                <p> A defesa siciliana é uma das defesas mais populares e agressivas no xadrez, e é feita com os seguintes movimentos de peças:
+                1. e4 c5.
+                </p>
+                <p>Ela é nomeada em homenagem à Sicília, uma região da Itália, onde foi popularizada no século XIX. A defesa siciliana visa controlar o centro do tabuleiro e criar oportunidades de contra-ataque para as pretas.</p>
+                <div class="card">Defesa Francesa</div>
+                <p> A defesa francesa é uma das defesas mais sólidas e estratégicas no xadrez, e é feita com os seguintes movimentos de peças:
+                1. e4 e6.
+                </p>
+                <p>Ela é nomeada em homenagem à França, onde foi popularizada no século XIX. A defesa francesa visa controlar o centro do tabuleiro e criar uma estrutura de peões sólida para as pretas.</p>
+                <div class="card">Caro-Kann</div>
+                <p> A defesa Caro-Kann é uma das defesas mais sólidas e estratégicas no xadrez, e é feita com os seguintes movimentos de peças:
+                1. e4 c6.
+                </p>
+                <p>Ela é nomeada em homenagem aos jogadores Horatio Caro e Marcus Kann, que a popularizaram no século XIX. A defesa Caro-Kann visa controlar o centro do tabuleiro e criar uma estrutura de peões sólida para as pretas.</p>
+
+            </div>
+        </section>
+
+        <section id="gambits">
+            <h2>Gambits</h2>
+            <p>Um gambito é uma abertura em que um jogador sacrifica material, geralmente um peão, com o objetivo de obter uma vantagem posicional ou de desenvolvimento.</p>
+            <div class="grid">
+
+                <div class="card">Gambito do Rei</div>
+                <p> O Gambito do Rei é uma abertura agressiva em que as brancas sacrificam um peão para obter um rápido desenvolvimento e controle do centro do tabuleiro. Os movimentos iniciais são:
+                1. e4 e5
+                2. f4.
+                </p>
+                <div class="card">Gambito da Dama</div>
+                <p> O Gambito da Dama é uma abertura clássica em que as brancas sacrificam um peão para obter um rápido desenvolvimento e controle do centro do tabuleiro. Os movimentos iniciais são:
+                1. d4 d5
+                2. c4.
+                </p>
+                <div class="card">Gambito Evans</div>
+                <p> O Gambito Evans é uma abertura agressiva em que as brancas sacrificam um peão para obter um rápido desenvolvimento e controle do centro do tabuleiro. Os movimentos iniciais são:
+                1. e4 e5
+                2. Nf3 Nc6
+                3. Bc4 Bc5
+                4. b4.
+                </p>
+                <div class="card">Gambito Benko</div>
+                <p> O Gambito Benko é uma abertura agressiva em que as pretas sacrificam um peão para obter um rápido desenvolvimento e controle do centro do tabuleiro. Os movimentos iniciais são:
+                1. d4 Nf6
+                2. c4 c5
+                3. d5 b5.
+                </p>
+            </div>
+        </section>
+
+        <section id="gm">
+            <h2>Grandes Mestres</h2>
+            <p>Grandes Mestres são jogadores de xadrez que alcançaram o mais alto nível de habilidade e reconhecimento no esporte. Eles são conhecidos por suas contribuições para a teoria do xadrez, suas partidas memoráveis e sua influência na comunidade enxadrística.</p>
+
+            <div class="grid">
+
+                <div class="card">
+                    <h3>Bobby Fischer</h3>
+                    <p> Bobby Fischer foi um jogador de xadrez americano que se tornou o 11º Campeão Mundial de Xadrez em 1972, derrotando Boris Spassky. Ele é amplamente considerado um dos maiores jogadores de todos os tempos.</p>
+                </div>
+
+                <div class="card">
+                    <h3>Garry Kasparov</h3>
+                    <p> Garry Kasparov é um jogador de xadrez russo que se tornou o 13º Campeão Mundial de Xadrez em 1985, derrotando Anatoly Karpov. Ele é amplamente considerado um dos maiores jogadores de todos os tempos.</p>
+                </div>
+
+                <div class="card">
+                    <h3>Magnus Carlsen</h3>
+                    <p> Magnus Carlsen é um jogador de xadrez norueguês que se tornou o 16º Campeão Mundial de Xadrez em 2013, derrotando Viswanathan Anand. Ele é amplamente considerado um dos maiores jogadores de todos os tempos.</p>
+                </div>
+
+            </div>
+        </section>
+
+        <section id="elo">
+            <h2>Sistema Elo</h2>
+
+            <div class="card">
+                <p>
+                    O sistema Elo mede a força relativa dos enxadristas.
+
+                    Ele foi desenvolvido por Arpad Elo, um professor de física e enxadrista húngaro-americano, e é amplamente utilizado em torneios de xadrez para classificar jogadores com base em seu desempenho em partidas.
+                </p>
+            </div>
+        </section>
+
+        <section id="curiosidades">
+            <h2>Curiosidades</h2>
+
+            <ul class="curiosidades">
+                <li>O "Mate do Louco" pode acontecer em apenas dois lances.
+
+                O Mate do Louco é uma das formas mais rápidas de se dar xeque-mate em uma partida de xadrez, e ocorre quando um jogador consegue colocar o rei adversário em xeque-mate em apenas dois lances. No entanto, é extremamente raro que isso aconteça em partidas entre jogadores experientes, pois envolve erros graves por parte do oponente.
+                </li>
+                <li>O número de posições possíveis é gigantesco.
+
+                O número de posições possíveis em uma partida de xadrez é estimado em cerca de 10^120, o que é um número extremamente grande. Isso significa que existem mais posições possíveis do que átomos no universo observável, tornando o xadrez um jogo incrivelmente complexo e desafiador.
+                </li>
+                <li>O termo xeque-mate vem do persa Shah Mat.
+
+                O termo tem origem no persa "Shah Mat", que significa "o rei está morto" ou "o rei está indefeso". Essa expressão reflete a situação em que o rei de um jogador está sob ataque e não há movimentos legais para escapar, resultando na derrota do jogador.
+                </li>
+            </ul>
+        </section>
+
+        <div class="timeline">
+    <div class="evento">
+        <h3>Século VI</h3>
+        <p>Origem do Chaturanga na Índia.</p>
     </div>
-    <div class="hero-visual">
-      <div class="stat-bubble sb1">
-        <div>
-          <div class="stat-num">98%</div>
-          <div class="stat-label">dos sites usam JS</div>
-        </div>
-      </div>
-      <div class="code-window">
-        <div class="window-bar">
-          <div class="dot dot-red"></div>
-          <div class="dot dot-yellow"></div>
-          <div class="dot dot-green"></div>
-          <div class="window-title">script.js</div>
-        </div>
-        <div class="code-body">
-          <div><span class="ln">01</span><span class="cmt">// Bem-vindo ao JavaScript!</span></div>
-          <div><span class="ln">02</span></div>
-          <div><span class="ln">03</span><span class="kw">const</span> <span class="fn">linguagem</span> = {</div>
-          <div><span class="ln">04</span>&nbsp;&nbsp;nome: <span class="str">"JavaScript"</span>,</div>
-          <div><span class="ln">05</span>&nbsp;&nbsp;criado: <span class="num">1995</span>,</div>
-          <div><span class="ln">06</span>&nbsp;&nbsp;diasDeDesenvolvimento: <span class="num">10</span>,</div>
-          <div><span class="ln">07</span>&nbsp;&nbsp;dominaMundo: <span class="yr">true</span>,</div>
-          <div><span class="ln">08</span>};</div>
-          <div><span class="ln">09</span></div>
-          <div><span class="ln">10</span><span class="kw">function</span> <span class="fn">aprender</span>(linguagem) {</div>
-          <div><span class="ln">11</span>&nbsp;&nbsp;<span class="kw">return</span> <span class="str">`${linguagem.nome} ✨`</span>;</div>
-          <div><span class="ln">12</span>}</div>
-          <div><span class="ln">13</span></div>
-          <div><span class="ln">14</span><span class="fn">console</span>.<span class="fn">log</span>(<span class="fn">aprender</span>(linguagem));</div>
-          <div><span class="ln">15</span><span class="cmt">// → "JavaScript ✨"</span></div>
-        </div>
-      </div>
-      <div class="stat-bubble sb2">
-        <div>
-          <div class="stat-num">#1</div>
-          <div class="stat-label">Stack Overflow 2024</div>
-        </div>
-      </div>
+
+    <div class="evento">
+        <h3>Século IX</h3>
+        <p>Difusão pela Pérsia.</p>
     </div>
-  </div>
+
+    <div class="evento">
+        <h3>Século XV</h3>
+        <p>Criação das regras modernas.</p>
+    </div>
 </div>
 
-<!-- MARQUEE -->
-<div class="marquee-wrap" style="border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); background: rgba(247,223,30,0.02);">
-  <div class="marquee-track">
-    <span class="marquee-item">React <span class="separator">✦</span></span>
-    <span class="marquee-item">Node.js <span class="separator">✦</span></span>
-    <span class="marquee-item">TypeScript <span class="separator">✦</span></span>
-    <span class="marquee-item">Vue.js <span class="separator">✦</span></span>
-    <span class="marquee-item">Next.js <span class="separator">✦</span></span>
-    <span class="marquee-item">Deno <span class="separator">✦</span></span>
-    <span class="marquee-item">Angular <span class="separator">✦</span></span>
-    <span class="marquee-item">Svelte <span class="separator">✦</span></span>
-    <span class="marquee-item">Express.js <span class="separator">✦</span></span>
-    <span class="marquee-item">Bun <span class="separator">✦</span></span>
-    <span class="marquee-item">Electron <span class="separator">✦</span></span>
-    <span class="marquee-item">Three.js <span class="separator">✦</span></span>
-    <!-- duplicate for seamless loop -->
-    <span class="marquee-item">React <span class="separator">✦</span></span>
-    <span class="marquee-item">Node.js <span class="separator">✦</span></span>
-    <span class="marquee-item">TypeScript <span class="separator">✦</span></span>
-    <span class="marquee-item">Vue.js <span class="separator">✦</span></span>
-    <span class="marquee-item">Next.js <span class="separator">✦</span></span>
-    <span class="marquee-item">Deno <span class="separator">✦</span></span>
-    <span class="marquee-item">Angular <span class="separator">✦</span></span>
-    <span class="marquee-item">Svelte <span class="separator">✦</span></span>
-    <span class="marquee-item">Express.js <span class="separator">✦</span></span>
-    <span class="marquee-item">Bun <span class="separator">✦</span></span>
-    <span class="marquee-item">Electron <span class="separator">✦</span></span>
-    <span class="marquee-item">Three.js <span class="separator">✦</span></span>
-  </div>
-</div>
-
-<!-- HISTORY -->
-<section id="historia">
-  <div class="section-label">História</div>
-  <h2 class="section-title">Criado em<br><span style="color: var(--js-yellow)">10 dias.</span></h2>
-  <p class="section-subtitle">Em 1995, a Netscape contratou Brendan Eich para criar uma linguagem de scripting para o browser Navigator. O resultado mudou a web para sempre.</p>
-
-  <div class="history-grid">
-    <div class="timeline">
-      <div class="tl-item">
-        <div class="tl-dot">◆</div>
-        <div class="tl-content">
-          <div class="tl-year">MAIO 1995</div>
-          <div class="tl-event">Criação em 10 dias</div>
-          <div class="tl-desc">Brendan Eich cria a linguagem em apenas 10 dias para a Netscape. O nome original era "Mocha", depois "LiveScript".</div>
-        </div>
-      </div>
-      <div class="tl-item">
-        <div class="tl-dot">◆</div>
-        <div class="tl-content">
-          <div class="tl-year">DEZEMBRO 1995</div>
-          <div class="tl-event">Rebatizada: JavaScript</div>
-          <div class="tl-desc">Para aproveitar a popularidade do Java (da Sun Microsystems), a linguagem é renomeada para JavaScript — apesar de não ter relação com Java.</div>
-        </div>
-      </div>
-      <div class="tl-item">
-        <div class="tl-dot">◆</div>
-        <div class="tl-content">
-          <div class="tl-year">1997</div>
-          <div class="tl-event">ECMAScript — Padronização</div>
-          <div class="tl-desc">A ECMA International padroniza a linguagem com o nome ECMAScript (ES1), garantindo compatibilidade entre diferentes browsers.</div>
-        </div>
-      </div>
-      <div class="tl-item">
-        <div class="tl-dot">◆</div>
-        <div class="tl-content">
-          <div class="tl-year">2009</div>
-          <div class="tl-event">Node.js — JS no servidor</div>
-          <div class="tl-desc">Ryan Dahl lança o Node.js, permitindo que JavaScript rode fora do browser, no lado do servidor, revolucionando o backend.</div>
-        </div>
-      </div>
-      <div class="tl-item">
-        <div class="tl-dot">◆</div>
-        <div class="tl-content">
-          <div class="tl-year">2015</div>
-          <div class="tl-event">ES6 — A grande modernização</div>
-          <div class="tl-desc">O ECMAScript 2015 (ES6) traz arrow functions, classes, Promises, template literals, destructuring e muito mais — a maior atualização da história da linguagem.</div>
-        </div>
-      </div>
-      <div class="tl-item">
-        <div class="tl-dot">◆</div>
-        <div class="tl-content">
-          <div class="tl-year">HOJE</div>
-          <div class="tl-event">A linguagem mais popular do mundo</div>
-          <div class="tl-desc">Por 12 anos consecutivos, JavaScript lidera a pesquisa do Stack Overflow como a linguagem mais usada, presente em 98% dos websites.</div>
-        </div>
-      </div>
-    </div>
-
-    <div class="creator-card">
-      <div class="creator-header">
-        <div class="creator-avatar">BE</div>
-        <div class="creator-name">Brendan Eich</div>
-        <div class="creator-role">Criador do JavaScript · Co-fundador da Mozilla</div>
-      </div>
-      <div class="creator-body">
-        <div class="creator-fact">
-          <div class="fact-icon">⚡</div>
-          <div class="fact-text">Criou o JavaScript em apenas <strong>10 dias</strong>, em maio de 1995, enquanto trabalhava na Netscape Communications.</div>
-        </div>
-        <div class="creator-fact">
-          <div class="fact-icon">🎓</div>
-          <div class="fact-text">Formado em Ciência da Computação pela <strong>Universidade de Illinois</strong> e pela <strong>Universidade de Santa Cruz</strong>.</div>
-        </div>
-        <div class="creator-fact">
-          <div class="fact-icon">🦊</div>
-          <div class="fact-text">Co-fundou a <strong>Mozilla Foundation</strong> e foi CEO interino da Mozilla Corporation em 2014.</div>
-        </div>
-        <div class="creator-fact">
-          <div class="fact-icon">🌐</div>
-          <div class="fact-text">Inspirou-se em <strong>Scheme, Self e Java</strong> para criar a linguagem que hoje é o alicerce da web moderna.</div>
-        </div>
-        <div class="creator-fact">
-          <div class="fact-icon">💡</div>
-          <div class="fact-text">Hoje é CEO da <strong>Brave Software</strong>, empresa por trás do navegador Brave focado em privacidade.</div>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- USAGE -->
-<section id="usos" class="usage-section">
-  <div class="section-label">Utilidades</div>
-  <h2 class="section-title">O que JavaScript<br><span style="color: var(--js-yellow)">pode fazer?</span></h2>
-  <p class="section-subtitle">JavaScript começou como uma ferramenta simples para animações no browser. Hoje, é onipresente — do frontend ao backend, de aplicativos móveis até satélites.</p>
-
-  <div class="usage-grid">
-    <div class="usage-card reveal">
-      <span class="usage-icon">🌐</span>
-      <div class="usage-title">Desenvolvimento Web</div>
-      <div class="usage-desc">Manipula o DOM, responde a eventos do usuário, valida formulários e cria interfaces interativas sem recarregar a página (AJAX, Fetch API).</div>
-      <span class="usage-tag">React · Vue · Angular</span>
-    </div>
-    <div class="usage-card reveal" style="transition-delay: 0.1s">
-      <span class="usage-icon">⚙️</span>
-      <div class="usage-title">Backend & Servidores</div>
-      <div class="usage-desc">Com Node.js, JavaScript roda no servidor criando APIs REST, GraphQL, WebSockets e aplicações em tempo real de alta performance.</div>
-      <span class="usage-tag">Node.js · Deno · Bun</span>
-    </div>
-    <div class="usage-card reveal" style="transition-delay: 0.2s">
-      <span class="usage-icon">📱</span>
-      <div class="usage-title">Apps Móveis</div>
-      <div class="usage-desc">Frameworks como React Native e Ionic permitem criar aplicativos nativos para iOS e Android usando JavaScript.</div>
-      <span class="usage-tag">React Native · Ionic</span>
-    </div>
-    <div class="usage-card reveal" style="transition-delay: 0.3s">
-      <span class="usage-icon">🖥️</span>
-      <div class="usage-title">Apps Desktop</div>
-      <div class="usage-desc">Electron.js possibilita criar aplicativos desktop multiplataforma com tecnologias web. VS Code, Slack e Discord são feitos assim.</div>
-      <span class="usage-tag">Electron · Tauri</span>
-    </div>
-    <div class="usage-card reveal" style="transition-delay: 0.4s">
-      <span class="usage-icon">🤖</span>
-      <div class="usage-title">Inteligência Artificial</div>
-      <div class="usage-desc">TensorFlow.js traz machine learning para o browser, permitindo modelos de IA rodando diretamente no cliente sem servidor.</div>
-      <span class="usage-tag">TensorFlow.js · Brain.js</span>
-    </div>
-    <div class="usage-card reveal" style="transition-delay: 0.5s">
-      <span class="usage-icon">🎮</span>
-      <div class="usage-title">Jogos & 3D</div>
-      <div class="usage-desc">Com WebGL, Canvas e Three.js, é possível criar jogos 2D e 3D, visualizações e experiências imersivas diretamente no browser.</div>
-      <span class="usage-tag">Three.js · Babylon.js · Phaser</span>
-    </div>
-  </div>
-</section>
-
-<!-- SYNTAX -->
-<section id="sintaxe" class="syntax-section">
-  <div class="section-label">Sintaxe</div>
-  <h2 class="section-title">Como JavaScript<br><span style="color: var(--js-yellow)">funciona?</span></h2>
-  <p class="section-subtitle">Explore os blocos fundamentais da linguagem — da declaração de variáveis até funções assíncronas modernas.</p>
-
-  <div class="syntax-tabs">
-    <button class="tab-btn active" onclick="showTab('variaveis')">Variáveis</button>
-    <button class="tab-btn" onclick="showTab('funcoes')">Funções</button>
-    <button class="tab-btn" onclick="showTab('arrays')">Arrays & Objetos</button>
-    <button class="tab-btn" onclick="showTab('controle')">Controle de Fluxo</button>
-    <button class="tab-btn" onclick="showTab('async')">Async / Await</button>
-    <button class="tab-btn" onclick="showTab('dom')">DOM</button>
-  </div>
-
-  <!-- Variables -->
-  <div class="tab-panel active" id="tab-variaveis">
-    <div class="syntax-layout">
-      <div class="syntax-explain">
-        <h3>Declaração de Variáveis</h3>
-        <p>JavaScript tem três formas de declarar variáveis, cada uma com comportamentos diferentes de escopo e reatribuição.</p>
-        <ul>
-          <li><strong style="color: var(--purple)">var</strong> — Escopo de função, içado (hoisting). Uso legado, evite.</li>
-          <li><strong style="color: var(--purple)">let</strong> — Escopo de bloco, pode ser reatribuído. Preferido para variáveis mutáveis.</li>
-          <li><strong style="color: var(--purple)">const</strong> — Escopo de bloco, não pode ser reatribuído. Padrão para valores fixos.</li>
-          <li><strong style="color: var(--orange)">Tipos primitivos</strong>: string, number, boolean, null, undefined, symbol, bigint.</li>
-          <li><strong style="color: var(--blue)">Tipagem dinâmica</strong> — O tipo é determinado em tempo de execução.</li>
-        </ul>
-      </div>
-      <div class="code-block">
-        <div class="code-block-header">
-          <div class="dot dot-red"></div><div class="dot dot-yellow"></div><div class="dot dot-green"></div>
-          <span class="code-block-title">variaveis.js</span>
-        </div>
-        <pre><span class="cmt">// ✅ Moderno: const e let</span>
-<span class="kw">const</span> nome = <span class="str">"JavaScript"</span>;         <span class="cmt">// string</span>
-<span class="kw">const</span> versao = <span class="num">2024</span>;               <span class="cmt">// number</span>
-<span class="kw">const</span> incrivel = <span class="yr">true</span>;             <span class="cmt">// boolean</span>
-<span class="kw">const</span> valor = <span class="yr">null</span>;               <span class="cmt">// null</span>
-<span class="kw">let</span> contador;                      <span class="cmt">// undefined</span>
-
-<span class="cmt">// Template Literals (ES6+)</span>
-<span class="kw">const</span> msg = <span class="str">`Olá, ${nome}! v${versao}`</span>;
-<span class="fn">console</span>.<span class="fn">log</span>(msg);
-<span class="cmt">// → "Olá, JavaScript! v2024"</span>
-
-<span class="cmt">// Destructuring</span>
-<span class="kw">const</span> { nome: n, versao: v } = { nome, versao };
-
-<span class="cmt">// typeof verifica o tipo</span>
-<span class="fn">console</span>.<span class="fn">log</span>(<span class="kw">typeof</span> nome);    <span class="cmt">// "string"</span>
-<span class="fn">console</span>.<span class="fn">log</span>(<span class="kw">typeof</span> versao);  <span class="cmt">// "number"</span></pre>
-      </div>
-    </div>
-  </div>
-
-  <!-- Functions -->
-  <div class="tab-panel" id="tab-funcoes">
-    <div class="syntax-layout">
-      <div class="syntax-explain">
-        <h3>Funções</h3>
-        <p>Funções são cidadãs de primeira classe em JavaScript — podem ser armazenadas em variáveis, passadas como argumentos e retornadas de outras funções.</p>
-        <ul>
-          <li><strong style="color: var(--purple)">function declaration</strong> — Içada, disponível antes da definição.</li>
-          <li><strong style="color: var(--purple)">function expression</strong> — Atribuída a uma variável.</li>
-          <li><strong style="color: var(--js-yellow)">arrow function</strong> — Sintaxe concisa ES6+, sem próprio <code>this</code>.</li>
-          <li><strong style="color: var(--blue)">Parâmetros padrão</strong> — Valores default quando argumento é omitido.</li>
-          <li><strong style="color: var(--green)">Rest params e spread</strong> — <code>...args</code> para múltiplos argumentos.</li>
-        </ul>
-      </div>
-      <div class="code-block">
-        <div class="code-block-header">
-          <div class="dot dot-red"></div><div class="dot dot-yellow"></div><div class="dot dot-green"></div>
-          <span class="code-block-title">funcoes.js</span>
-        </div>
-        <pre><span class="cmt">// Declaração de função</span>
-<span class="kw">function</span> <span class="fn">somar</span>(a, b) {
-  <span class="kw">return</span> a + b;
-}
-
-<span class="cmt">// Arrow function (ES6+)</span>
-<span class="kw">const</span> <span class="fn">multiplicar</span> = (a, b) => a * b;
-
-<span class="cmt">// Parâmetro padrão</span>
-<span class="kw">const</span> <span class="fn">saudar</span> = (nome = <span class="str">"Mundo"</span>) => {
-  <span class="kw">return</span> <span class="str">`Olá, ${nome}!`</span>;
-};
-
-<span class="cmt">// Higher-order function</span>
-<span class="kw">const</span> <span class="fn">aplicar</span> = (fn, x, y) => fn(x, y);
-<span class="fn">aplicar</span>(somar, <span class="num">3</span>, <span class="num">4</span>); <span class="cmt">// → 7</span>
-
-<span class="cmt">// Rest parameters</span>
-<span class="kw">const</span> <span class="fn">total</span> = (...nums) =>
-  nums.<span class="fn">reduce</span>((acc, n) => acc + n, <span class="num">0</span>);
-
-<span class="fn">total</span>(<span class="num">1</span>, <span class="num">2</span>, <span class="num">3</span>, <span class="num">4</span>); <span class="cmt">// → 10</span></pre>
-      </div>
-    </div>
-  </div>
-
-  <!-- Arrays -->
-  <div class="tab-panel" id="tab-arrays">
-    <div class="syntax-layout">
-      <div class="syntax-explain">
-        <h3>Arrays & Objetos</h3>
-        <p>Arrays e objetos são as estruturas de dados centrais do JavaScript, com métodos poderosos para manipulação funcional de dados.</p>
-        <ul>
-          <li><strong style="color: var(--blue)">map()</strong> — Transforma cada elemento, retorna novo array.</li>
-          <li><strong style="color: var(--blue)">filter()</strong> — Filtra elementos por condição.</li>
-          <li><strong style="color: var(--blue)">reduce()</strong> — Acumula valores em um único resultado.</li>
-          <li><strong style="color: var(--js-yellow)">Spread operator</strong> — <code>...</code> para copiar e mesclar.</li>
-          <li><strong style="color: var(--green)">Objetos</strong> — Pares chave-valor com métodos e herança por protótipo.</li>
-        </ul>
-      </div>
-      <div class="code-block">
-        <div class="code-block-header">
-          <div class="dot dot-red"></div><div class="dot dot-yellow"></div><div class="dot dot-green"></div>
-          <span class="code-block-title">arrays-objetos.js</span>
-        </div>
-        <pre><span class="kw">const</span> nums = [<span class="num">1</span>, <span class="num">2</span>, <span class="num">3</span>, <span class="num">4</span>, <span class="num">5</span>];
-
-<span class="cmt">// map — transforma</span>
-<span class="kw">const</span> dobrados = nums.<span class="fn">map</span>(n => n * <span class="num">2</span>);
-<span class="cmt">// → [2, 4, 6, 8, 10]</span>
-
-<span class="cmt">// filter — filtra</span>
-<span class="kw">const</span> pares = nums.<span class="fn">filter</span>(n => n % <span class="num">2</span> === <span class="num">0</span>);
-<span class="cmt">// → [2, 4]</span>
-
-<span class="cmt">// reduce — acumula</span>
-<span class="kw">const</span> soma = nums.<span class="fn">reduce</span>((acc, n) => acc + n, <span class="num">0</span>);
-<span class="cmt">// → 15</span>
-
-<span class="cmt">// Objeto com método</span>
-<span class="kw">const</span> pessoa = {
-  nome: <span class="str">"Ana"</span>,
-  idade: <span class="num">28</span>,
-  <span class="fn">apresentar</span>() {
-    <span class="kw">return</span> <span class="str">`${this.nome}, ${this.idade} anos`</span>;
-  }
-};
-
-<span class="cmt">// Spread — clonar e estender</span>
-<span class="kw">const</span> atualizado = { ...pessoa, cidade: <span class="str">"Lisboa"</span> };</pre>
-      </div>
-    </div>
-  </div>
-
-  <!-- Control Flow -->
-  <div class="tab-panel" id="tab-controle">
-    <div class="syntax-layout">
-      <div class="syntax-explain">
-        <h3>Controle de Fluxo</h3>
-        <p>Estruturas condicionais e loops permitem controlar a execução do código com base em condições e iterações.</p>
-        <ul>
-          <li><strong style="color: var(--purple)">if / else if / else</strong> — Condicional básica.</li>
-          <li><strong style="color: var(--purple)">switch</strong> — Múltiplas condições sobre um valor.</li>
-          <li><strong style="color: var(--blue)">for / while</strong> — Loops tradicionais.</li>
-          <li><strong style="color: var(--js-yellow)">for...of</strong> — Itera sobre iteráveis (arrays, strings).</li>
-          <li><strong style="color: var(--green)">Ternário</strong> — Condicional compacta em uma linha.</li>
-        </ul>
-      </div>
-      <div class="code-block">
-        <div class="code-block-header">
-          <div class="dot dot-red"></div><div class="dot dot-yellow"></div><div class="dot dot-green"></div>
-          <span class="code-block-title">controle.js</span>
-        </div>
-        <pre><span class="kw">const</span> nota = <span class="num">85</span>;
-
-<span class="cmt">// if / else</span>
-<span class="kw">if</span> (nota >= <span class="num">90</span>) {
-  <span class="fn">console</span>.<span class="fn">log</span>(<span class="str">"A"</span>);
-} <span class="kw">else if</span> (nota >= <span class="num">70</span>) {
-  <span class="fn">console</span>.<span class="fn">log</span>(<span class="str">"B"</span>); <span class="cmt">// → "B"</span>
-} <span class="kw">else</span> {
-  <span class="fn">console</span>.<span class="fn">log</span>(<span class="str">"C"</span>);
-}
-
-<span class="cmt">// Ternário</span>
-<span class="kw">const</span> resultado = nota >= <span class="num">60</span> ? <span class="str">"Aprovado"</span> : <span class="str">"Reprovado"</span>;
-
-<span class="cmt">// for...of</span>
-<span class="kw">const</span> frutas = [<span class="str">"🍎"</span>, <span class="str">"🍌"</span>, <span class="str">"🍇"</span>];
-<span class="kw">for</span> (<span class="kw">const</span> fruta <span class="kw">of</span> frutas) {
-  <span class="fn">console</span>.<span class="fn">log</span>(fruta);
-}
-
-<span class="cmt">// switch</span>
-<span class="kw">switch</span> (<span class="str">"JS"</span>) {
-  <span class="kw">case</span> <span class="str">"JS"</span>:
-    <span class="fn">console</span>.<span class="fn">log</span>(<span class="str">"JavaScript!"</span>);
-    <span class="kw">break</span>;
-  <span class="kw">default</span>:
-    <span class="fn">console</span>.<span class="fn">log</span>(<span class="str">"Outra linguagem"</span>);
-}</pre>
-      </div>
-    </div>
-  </div>
-
-  <!-- Async -->
-  <div class="tab-panel" id="tab-async">
-    <div class="syntax-layout">
-      <div class="syntax-explain">
-        <h3>Async / Await</h3>
-        <p>JavaScript é assíncrono por natureza. Promises e async/await permitem lidar com operações demoradas (I/O, rede) sem bloquear a execução.</p>
-        <ul>
-          <li><strong style="color: var(--blue)">Promise</strong> — Representa um valor futuro: pending, fulfilled, rejected.</li>
-          <li><strong style="color: var(--purple)">async</strong> — Declara uma função assíncrona que retorna uma Promise.</li>
-          <li><strong style="color: var(--purple)">await</strong> — Pausa a execução até a Promise resolver.</li>
-          <li><strong style="color: var(--pink)">try/catch</strong> — Captura erros em código assíncrono.</li>
-          <li><strong style="color: var(--green)">Fetch API</strong> — Interface moderna para requisições HTTP.</li>
-        </ul>
-      </div>
-      <div class="code-block">
-        <div class="code-block-header">
-          <div class="dot dot-red"></div><div class="dot dot-yellow"></div><div class="dot dot-green"></div>
-          <span class="code-block-title">async.js</span>
-        </div>
-        <pre><span class="cmt">// Promise básica</span>
-<span class="kw">const</span> esperar = (ms) =>
-  <span class="kw">new</span> <span class="fn">Promise</span>(resolve => <span class="fn">setTimeout</span>(resolve, ms));
-
-<span class="cmt">// async / await com Fetch API</span>
-<span class="kw">async function</span> <span class="fn">buscarUsuario</span>(id) {
-  <span class="kw">try</span> {
-    <span class="kw">const</span> resposta = <span class="kw">await</span> <span class="fn">fetch</span>(
-      <span class="str">`https://api.exemplo.com/users/${id}`</span>
-    );
-
-    <span class="kw">if</span> (!resposta.ok) {
-      <span class="kw">throw new</span> <span class="fn">Error</span>(<span class="str">"Usuário não encontrado"</span>);
-    }
-
-    <span class="kw">const</span> dados = <span class="kw">await</span> resposta.<span class="fn">json</span>();
-    <span class="kw">return</span> dados;
-
-  } <span class="kw">catch</span> (erro) {
-    <span class="fn">console</span>.<span class="fn">error</span>(<span class="str">"Erro:"</span>, erro.message);
-  }
-}
-
-<span class="cmt">// Paralelismo com Promise.all</span>
-<span class="kw">const</span> [user1, user2] = <span class="kw">await</span> Promise.<span class="fn">all</span>([
-  <span class="fn">buscarUsuario</span>(<span class="num">1</span>),
-  <span class="fn">buscarUsuario</span>(<span class="num">2</span>)
-]);</pre>
-      </div>
-    </div>
-  </div>
-
-  <!-- DOM -->
-  <div class="tab-panel" id="tab-dom">
-    <div class="syntax-layout">
-      <div class="syntax-explain">
-        <h3>Manipulação do DOM</h3>
-        <p>O DOM (Document Object Model) é a representação em árvore do HTML. JavaScript pode selecionar, criar, modificar e remover elementos dinamicamente.</p>
-        <ul>
-          <li><strong style="color: var(--blue)">querySelector</strong> — Seleciona elementos com seletores CSS.</li>
-          <li><strong style="color: var(--green)">addEventListener</strong> — Escuta eventos do usuário.</li>
-          <li><strong style="color: var(--orange)">innerHTML / textContent</strong> — Modifica o conteúdo.</li>
-          <li><strong style="color: var(--purple)">classList</strong> — Adiciona, remove e alterna classes CSS.</li>
-          <li><strong style="color: var(--js-yellow)">createElement</strong> — Cria novos elementos HTML.</li>
-        </ul>
-      </div>
-      <div class="code-block">
-        <div class="code-block-header">
-          <div class="dot dot-red"></div><div class="dot dot-yellow"></div><div class="dot dot-green"></div>
-          <span class="code-block-title">dom.js</span>
-        </div>
-        <pre><span class="cmt">// Selecionar elementos</span>
-<span class="kw">const</span> btn = document.<span class="fn">querySelector</span>(<span class="str">"#meu-btn"</span>);
-<span class="kw">const</span> lista = document.<span class="fn">querySelector</span>(<span class="str">".lista"</span>);
-
-<span class="cmt">// Escutar evento de clique</span>
-btn.<span class="fn">addEventListener</span>(<span class="str">"click"</span>, () => {
-  <span class="cmt">// Criar novo elemento</span>
-  <span class="kw">const</span> item = document.<span class="fn">createElement</span>(<span class="str">"li"</span>);
-  item.textContent = <span class="str">"Novo item!"</span>;
-  lista.<span class="fn">appendChild</span>(item);
-
-  <span class="cmt">// Alterar estilo dinamicamente</span>
-  btn.classList.<span class="fn">toggle</span>(<span class="str">"ativo"</span>);
-});
-
-<span class="cmt">// Modificar atributos</span>
-<span class="kw">const</span> img = document.<span class="fn">querySelector</span>(<span class="str">"img"</span>);
-img.<span class="fn">setAttribute</span>(<span class="str">"alt"</span>, <span class="str">"Descrição"</span>);
-img.style.opacity = <span class="str">"0.5"</span>;
-
-<span class="cmt">// Formulário</span>
-<span class="kw">const</span> input = document.<span class="fn">querySelector</span>(<span class="str">"input"</span>);
-input.<span class="fn">addEventListener</span>(<span class="str">"input"</span>, (e) => {
-  <span class="fn">console</span>.<span class="fn">log</span>(e.target.value);
-});</pre>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- FEATURES BENTO -->
-<section id="recursos" class="features-section">
-  <div class="section-label">Recursos</div>
-  <h2 class="section-title reveal">O poder do<br><span style="color: var(--js-yellow)">ecossistema JS</span></h2>
-  <p class="section-subtitle reveal">JavaScript evoluiu com o ECMAScript, ganhando recursos modernos a cada ano que mantêm a linguagem relevante e poderosa.</p>
-
-  <div class="features-bento">
-    <div class="bento-card wide reveal">
-      <div class="bg-char">ES</div>
-      <div class="bento-badge">ECMAScript</div>
-      <div class="bento-icon">📜</div>
-      <div class="bento-title">Padrão ECMAScript</div>
-      <div class="bento-desc">JavaScript é padronizado pela ECMA International como ECMAScript. Novas versões são lançadas anualmente com funcionalidades modernas.</div>
-      <div class="ecma-bar">
-        <span class="ecma-chip">ES5 (2009)</span>
-        <span class="ecma-chip">ES6 (2015)</span>
-        <span class="ecma-chip">ES2017</span>
-        <span class="ecma-chip">ES2020</span>
-        <span class="ecma-chip">ES2024</span>
-      </div>
-    </div>
-
-    <div class="bento-card reveal" style="transition-delay:0.1s">
-      <div class="bg-char">{}</div>
-      <div class="bento-icon">🔗</div>
-      <div class="bento-title">Orientado a Objetos</div>
-      <div class="bento-desc">Suporte a classes ES6+ com herança, encapsulamento e getters/setters, construídos sobre protótipos.</div>
-      <div class="bento-code"><span class="kw">class</span> <span class="fn">Animal</span> {<br>&nbsp;&nbsp;<span class="fn">constructor</span>(nome) {<br>&nbsp;&nbsp;&nbsp;&nbsp;this.nome = nome;<br>&nbsp;&nbsp;}<br>}</div>
-    </div>
-
-    <div class="bento-card reveal" style="transition-delay:0.2s">
-      <div class="bg-char">⚡</div>
-      <div class="bento-icon">⚡</div>
-      <div class="bento-title">Event Loop</div>
-      <div class="bento-desc">Modelo assíncrono single-thread com event loop, call stack e fila de tarefas que permite concorrência sem bloqueio.</div>
-    </div>
-
-    <div class="bento-card reveal" style="transition-delay:0.3s">
-      <div class="bg-char">λ</div>
-      <div class="bento-icon">λ</div>
-      <div class="bento-title">Programação Funcional</div>
-      <div class="bento-desc">Funções de primeira classe, closures, imutabilidade e composição de funções como paradigma nativo.</div>
-    </div>
-
-    <div class="bento-card reveal" style="transition-delay:0.4s">
-      <div class="bg-char">📦</div>
-      <div class="bento-icon">📦</div>
-      <div class="bento-title">NPM</div>
-      <div class="bento-desc">O maior repositório de pacotes do mundo, com mais de 2,1 milhões de pacotes disponíveis para qualquer finalidade.</div>
-      <div class="bento-code"><span class="str">npm install</span> express<br><span class="str">npm install</span> react</div>
-    </div>
-
-    <div class="bento-card wide reveal" style="transition-delay:0.5s">
-      <div class="bg-char">∞</div>
-      <div class="bento-badge">Moderno</div>
-      <div class="bento-icon">✨</div>
-      <div class="bento-title">Módulos ES6+</div>
-      <div class="bento-desc">Sistema de módulos nativo com import/export para organizar e reutilizar código de forma clara e eficiente.</div>
-      <div class="bento-code"><span class="kw">import</span> { useState } <span class="kw">from</span> <span class="str">'react'</span>;<br><span class="kw">export default</span> <span class="kw">function</span> <span class="fn">App</span>() { ... }</div>
-    </div>
-  </div>
-</section>
-
-<!-- ENGINES -->
-<section id="motores" class="engines-section">
-  <div class="section-label">Motores JS</div>
-  <h2 class="section-title reveal">Quem executa<br><span style="color: var(--js-yellow)">o JavaScript?</span></h2>
-  <p class="section-subtitle reveal">Os motores JavaScript são softwares que interpretam e compilam código JS usando JIT (Just-In-Time compilation) para máxima performance.</p>
-
-  <div class="engines-grid">
-    <div class="engine-card reveal">
-      <div class="engine-logo">⚡</div>
-      <div class="engine-name">V8</div>
-      <div class="engine-by">Google · Chrome & Node.js</div>
-      <div class="engine-desc">O motor mais rápido e amplamente usado. Compila JS diretamente para código de máquina via JIT. Desenvolvido em C++ e open source.</div>
-    </div>
-    <div class="engine-card reveal" style="transition-delay:0.1s">
-      <div class="engine-logo">🦊</div>
-      <div class="engine-name">SpiderMonkey</div>
-      <div class="engine-by">Mozilla · Firefox</div>
-      <div class="engine-desc">O primeiro motor JavaScript criado pelo próprio Brendan Eich. Hoje suporta WebAssembly e usa um compilador avançado multi-camada.</div>
-    </div>
-    <div class="engine-card reveal" style="transition-delay:0.2s">
-      <div class="engine-logo">🔵</div>
-      <div class="engine-name">JavaScriptCore</div>
-      <div class="engine-by">Apple · Safari</div>
-      <div class="engine-desc">Motor da Apple, também conhecido como Nitro. Altamente otimizado para iOS e macOS, com foco em consumo de energia e velocidade.</div>
-    </div>
-  </div>
-</section>
-
-<!-- STATS SECTION -->
-<div class="full-width-section">
-  <div style="max-width: 1300px; margin: 0 auto; padding: 0 4rem;">
-    <div class="section-label" style="justify-content: center; margin-bottom: 1rem;">JavaScript em números</div>
-    <h2 class="section-title" style="text-align: center">A linguagem que<br><span style="color: var(--js-yellow)">domina tudo.</span></h2>
-    <div class="big-stat-row">
-      <div class="big-stat reveal">
-        <span class="big-stat-num">98%</span>
-        <div class="big-stat-label">dos websites usam JavaScript</div>
-      </div>
-      <div class="big-stat reveal" style="transition-delay:0.1s">
-        <span class="big-stat-num">12×</span>
-        <div class="big-stat-label">consecutivo #1 no Stack Overflow</div>
-      </div>
-      <div class="big-stat reveal" style="transition-delay:0.2s">
-        <span class="big-stat-num">2.1M+</span>
-        <div class="big-stat-label">pacotes no NPM</div>
-      </div>
-      <div class="big-stat reveal" style="transition-delay:0.3s">
-        <span class="big-stat-num">10</span>
-        <div class="big-stat-label">dias para criar a linguagem</div>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- FOOTER -->
-<footer>
-  <div class="footer-logo">JS</div>
-  <p class="footer-text">
-    Guia introdutório à linguagem JavaScript.<br>
-    Baseado nas especificações <a href="#">ECMAScript</a> e nas melhores práticas da comunidade.<br><br>
-    <span style="color: rgba(255,255,255,0.2); font-size: 0.78rem; font-family: 'JetBrains Mono', monospace;">
-      // JavaScript — Criado em 1995 por Brendan Eich. A web como conhecemos.
-    </span>
-  </p>
-</footer>
-
-<script>
-  // Custom cursor
-  const cursor = document.getElementById('cursor');
-  const ring = document.getElementById('cursorRing');
-  document.addEventListener('mousemove', (e) => {
-    cursor.style.left = e.clientX + 'px';
-    cursor.style.top = e.clientY + 'px';
-    setTimeout(() => {
-      ring.style.left = e.clientX + 'px';
-      ring.style.top = e.clientY + 'px';
-    }, 80);
-  });
-
-  // Tabs
-  function showTab(id) {
-    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
-    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-    document.getElementById('tab-' + id).classList.add('active');
-    event.target.classList.add('active');
-  }
-
-  // Intersection Observer for animations
-  const observer = new IntersectionObserver((entries) => {
-    entries.forEach((entry, i) => {
-      if (entry.isIntersecting) {
-        entry.target.classList.add('visible');
-      }
-    });
-  }, { threshold: 0.1 });
-
-  document.querySelectorAll('.tl-item, .usage-card, .bento-card, .engine-card, .reveal').forEach(el => {
-    observer.observe(el);
-  });
-
-  // Staggered delays for grid items
-  document.querySelectorAll('.usage-card').forEach((el, i) => {
-    el.style.transitionDelay = (i * 0.08) + 's';
-  });
-  document.querySelectorAll('.bento-card').forEach((el, i) => {
-    el.style.transitionDelay = (i * 0.08) + 's';
-  });
-  document.querySelectorAll('.tl-item').forEach((el, i) => {
-    el.style.transitionDelay = (i * 0.12) + 's';
-  });
-</script>
+    </main>
 </body>
 </html>
